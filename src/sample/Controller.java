@@ -16,7 +16,10 @@ import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static java.lang.Math.pow;
@@ -255,5 +258,52 @@ public class Controller {
 //        double gamma = (double) ((int) (this.gammaSlider.getValue() * 10) / 10);
         double gamma = this.gammaSlider.getValue();
         this.gammaValue.setText(String.valueOf(gamma));
+    }
+
+    public void saveFile(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+
+        //Set extension filter
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PNG file (*.png)", "*.png");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(this.stage);
+
+        if (file != null) {
+            BufferedImage out = null;
+            File fout = null;
+            try {
+                fout = new File("out.png");
+                out = ImageIO.read(fout);
+                ImageIO.write(out, "png", file);
+
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+        }
+    }
+
+    private void SaveFile(String content, File file) {
+        try {
+            FileWriter fileWriter = null;
+
+            fileWriter = new FileWriter(file);
+            fileWriter.write(content);
+            fileWriter.close();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+    }
+
+    private static String readAllBytesJava7(String filePath) {
+        String content = "";
+        try {
+            content = new String(Files.readAllBytes(Paths.get(filePath)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return content;
     }
 }

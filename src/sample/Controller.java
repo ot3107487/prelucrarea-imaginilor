@@ -66,19 +66,21 @@ public class Controller {
 
     public void convert(ActionEvent actionEvent) {
         BufferedImage img = null;
+        BufferedImage imgCopy = null;
         File f = null;
         try {
 
             f = new File("in.png");
             img = ImageIO.read(f);
+            imgCopy = ImageIO.read(f);
         } catch (IOException e) {
             System.out.println(e);
         }
         int width = img.getWidth();
         int height = img.getHeight();
-        for (int i = 1; i < width - 1; i+=2) {
-            for (int j = 1; j < height - 1; j+=2) {
-                this.areaTransform(img, i, j, this.selectedTransformationType);
+        for (int i = 1; i < width - 1; i++) {
+            for (int j = 1; j < height - 1; j++) {
+                this.areaTransform(img,imgCopy, i, j, this.selectedTransformationType);
             }
         }
 
@@ -99,21 +101,21 @@ public class Controller {
      * @param j position x in image of the centered element in the mask
      * @param selectedTransformationType
      */
-    private void areaTransform(BufferedImage img, int i, int j, TransformationType selectedTransformationType) {
+    private void areaTransform(BufferedImage img, BufferedImage imgCopy, int i, int j, TransformationType selectedTransformationType) {
         switch (selectedTransformationType) {
             case FILTRARE_DIRECTIONALA: {
                 FiltrareDirectionala fd = new FiltrareDirectionala();
-                fd.filteringDirection(img, i, j);
+                fd.filteringDirection(img,imgCopy, i, j);
                 break;
             }
             case IMAGINI_MEDICAE: {
                 Laplacian l = new Laplacian();
-                l.medicalImag(img,i,j);
+                l.medicalImag(img,imgCopy,i,j);
                 break;
             }
             case INVERSAREA_CONSTRASTULUI: {
                 InversareContrast ic = new InversareContrast();
-                ic.inversareContrast(img, i, j);
+                ic.inversareContrast(img,imgCopy, i, j);
                 break;
             }
             default:

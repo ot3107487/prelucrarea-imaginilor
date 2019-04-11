@@ -8,10 +8,10 @@ import static sample.PixelUtils.pixelGreen;
 import static sample.PixelUtils.pixelRed;
 
 public class Laplacian {
-    public void medicalImag(BufferedImage img, int i, int j) {
-        int r = this.maskRed(img, i, j);
-        int g = this.maskGreen(img, i, j);
-        int b = this.maskBlue(img, i, j);
+    public void medicalImag(BufferedImage img, BufferedImage imgCopy, int i, int j) {
+        int r = this.maskRed(imgCopy, i, j);
+        int g = this.maskGreen(imgCopy, i, j);
+        int b = this.maskBlue(imgCopy, i, j);
         int val = (255 << 24) | (r << 16) | (g << 8) | b;
         img.setRGB(i, j, val);
 

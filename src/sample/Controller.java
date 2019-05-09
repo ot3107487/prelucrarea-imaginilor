@@ -14,10 +14,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
+import java.util.Date;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
@@ -29,8 +32,6 @@ public class Controller {
     ImageView input;
     @FXML
     ImageView output;
-    @FXML
-    ComboBox transformation;
     @FXML
     Slider aSlider;
     @FXML
@@ -44,10 +45,6 @@ public class Controller {
     @FXML
     Label gammaValue;
 
-    TransformationType selectedTransformationType;
-
-    ObservableList<TransformationType> transformations;
-
     public void setStage(Stage stage) {
         this.stage = stage;
     }
@@ -55,77 +52,30 @@ public class Controller {
     String inputFileUrl = "src/in.png";
     Stage stage;
 
+    GifSequenceWriter writer;
+    ImageOutputStream outputStream;
+
     @FXML
     public void initialize() {
-        this.transformations = FXCollections.observableArrayList();
-        this.transformations.addAll(Arrays.asList(TransformationType.values()));
-        this.transformation.setItems(this.transformations);
-        this.transformation.setValue(this.transformations.get(0));
-        this.selectedTransformationType = this.transformations.get(0);
+        File out = new File("./out.gif");
+        try {
+            out.delete();
+            out.createNewFile();
+            outputStream = new FileImageOutputStream(out);
+            writer = new GifSequenceWriter(outputStream, 5, 700, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void convert(ActionEvent actionEvent) {
-        BufferedImage img = null;
-        BufferedImage imgCopy = null;
-        File f = null;
-        try {
-
-            f = new File("in.png");
-            img = ImageIO.read(f);
-            imgCopy = ImageIO.read(f);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-        int width = img.getWidth();
-        int height = img.getHeight();
-        for (int i = 1; i < width - 1; i++) {
-            for (int j = 1; j < height - 1; j++) {
-                this.areaTransform(img,imgCopy, i, j, this.selectedTransformationType);
-            }
-        }
-
-        //write image
-        try {
-            f = new File("./out.png");
-            ImageIO.write(img, "png", f);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-        this.output.setImage(new Image("file:out.png"));
-    }
-
-    /***
-     *
-     * @param img
-     * @param i position x in image of the centered element in the mask
-     * @param j position x in image of the centered element in the mask
-     * @param selectedTransformationType
-     */
-    private void areaTransform(BufferedImage img, BufferedImage imgCopy, int i, int j, TransformationType selectedTransformationType) {
-        switch (selectedTransformationType) {
-            case FILTRARE_DIRECTIONALA: {
-                FiltrareDirectionala fd = new FiltrareDirectionala();
-                fd.filteringDirection(img,imgCopy, i, j);
-                break;
-            }
-            case IMAGINI_MEDICAE: {
-                Laplacian l = new Laplacian();
-                l.medicalImag(img,imgCopy,i,j);
-                break;
-            }
-            case INVERSAREA_CONSTRASTULUI: {
-                InversareContrast ic = new InversareContrast();
-                ic.inversareContrast(img,imgCopy, i, j);
-                break;
-            }
-            default:
-                break;
-        }
-
+    public void convert(ActionEvent actionEvent) throws IOException {
+        BufferedImage next = ImageIO.read(new File("./in.png"));
+        writer.writeToSequence(next);
+        this.output.setImage(new Image("file:out.gif"));
     }
 
     public void chooseFile() throws IOException {
-        this.output.setImage(null);
+        this.output.setImage(new Image("file:in.png"));
         FileChooser fileChooser = new FileChooser();
         BufferedImage img = null;
         File selectedFile = fileChooser.showOpenDialog(stage);
@@ -136,49 +86,50 @@ public class Controller {
         }
         File newInput = new File("./in.png");
         ImageIO.write(img, "png", newInput);
+        writer.writeToSequence(img);
         // this.grayScale();
         this.input.setImage(new Image("file:in.png"));
     }
 
-    public void selectTransformationType(ActionEvent actionEvent) {
-        this.selectedTransformationType = (TransformationType) this.transformation.getValue();
-    }
-
-    public void redirect(ActionEvent actionEvent) {
-        BufferedImage out = null;
-        File fin = null;
-        File fout = null;
+    public void reset(ActionEvent actionEvent) {
+        this.output.setImage(null);
         try {
-
-            fin = new File("in.png");
-            fout = new File("out.png");
-            out = ImageIO.read(fout);
-            ImageIO.write(out, "png", fin);
+            outputStream.close();
+            File out = new File("./out.gif");
+            out.delete();
+            out.createNewFile();
 
         } catch (IOException e) {
-            System.out.println(e);
+
         }
-        this.input.setImage(new Image("file:in.png"));
-        this.output.setImage(null);
+
     }
 
-    public void saveFile(ActionEvent actionEvent) {
+
+    public void saveFile(ActionEvent actionEvent) throws IOException {
         FileChooser fileChooser = new FileChooser();
 
         //Set extension filter
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PNG file (*.png)", "*.png");
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("GIF file (*.gif)", "*.gif");
         fileChooser.getExtensionFilters().add(extFilter);
 
         //Show save file dialog
         File file = fileChooser.showSaveDialog(this.stage);
-
+        InputStream is = null;
+        OutputStream os = null;
         if (file != null) {
-            BufferedImage out = null;
             File fout = null;
             try {
-                fout = new File("out.png");
-                out = ImageIO.read(fout);
-                ImageIO.write(out, "png", file);
+                fout = new File("out.gif");
+                is = new FileInputStream(fout);
+                os = new FileOutputStream(file);
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = is.read(buffer)) > 0) {
+                    os.write(buffer, 0, length);
+                }
+                is.close();
+                os.close();
 
             } catch (IOException e) {
                 System.out.println(e);

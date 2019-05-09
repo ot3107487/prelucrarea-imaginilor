@@ -11,10 +11,9 @@
     <children>
         <ImageView fx:id="input" fitHeight="900" fitWidth="900" layoutX="14.0" layoutY="63.0" pickOnBounds="true" preserveRatio="true" />
         <ImageView fx:id="output" fitHeight="900" fitWidth="900" layoutX="920.0" layoutY="63.0" pickOnBounds="true" preserveRatio="true" />
-        <Button layoutX="25.0" layoutY="14.0" mnemonicParsing="false" onAction="#convert" text="Transform" />
+        <!--<Button layoutX="25.0" layoutY="14.0" mnemonicParsing="false" onAction="#convert" text="Add to GIF" />-->
         <Button layoutX="100" layoutY="14.0" mnemonicParsing="false" onAction="#chooseFile" text="Upload photo" />
-        <ComboBox fx:id="transformation" layoutX="199.0" layoutY="14.0" onAction="#selectTransformationType" prefWidth="150.0" promptText="Black n white" />
-        <Button fx:id="redirect" layoutX="894.0" layoutY="27.0" mnemonicParsing="false" onAction="#redirect" text="&lt;&lt;" />
+        <Button fx:id="redirect" layoutX="894.0" layoutY="27.0" mnemonicParsing="false" onAction="#reset" text="Reset" />
       <Button layoutX="1400.0" layoutY="13.0" mnemonicParsing="false" onAction="#saveFile" text="Download" />
     </children>
 </AnchorPane>
